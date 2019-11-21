@@ -18,7 +18,7 @@ class DisplayerClass
 private:
 	Display* display;
 	int dispCnt;
-	short* segPin = new short[8];
+	short segPin[8];
 
 	int refreshableDisp = 0;
 	unsigned long startTime;
