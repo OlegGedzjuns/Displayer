@@ -6,25 +6,25 @@ void DisplayerClass::Init(const short segPin_[8], const short dispCnt_, const sh
 	// Creating display containers, saving segment and display pins 
 	dispCnt = dispCnt_;
 	display = new Display[dispCnt];
+	memcpy(segPin, segPin_, sizeof(segPin_) * sizeof(short));
 
-	memcpy(segPin, segPin_, sizeof(segPin_));
-
-	for (int seg = 0; seg < sizeof(segPin); ++seg)
+	for (int seg = 0; seg < 8; ++seg)
 	{
 		pinMode(segPin[seg], OUTPUT);
 		digitalWrite(segPin[seg], LOW);
 	}
-	for (int disp = 0; disp < dispCnt_; ++disp)
+	for (int disp = 0; disp < dispCnt; ++disp)
 	{
 		display[disp].pin = dispPin_[disp];
 		pinMode(display[disp].pin, OUTPUT);
 		digitalWrite(display[disp].pin, HIGH);
 	}
+	Show("xxx");
 }
 
-void DisplayerClass::Show(char c[] = "")
+void DisplayerClass::Show(const char c[] = "")
 {
-	for (int dispPos = 0, strPos = 0; c[strPos], dispPos < 3; ++strPos)
+	for (int dispPos = 0, strPos = 0; c[strPos] != '\0' && dispPos < 3; ++strPos)
 	{
 		if (c[strPos] == '.')
 			continue;
@@ -87,11 +87,12 @@ void DisplayerClass::RefreshStart()
 	// light up display 
 	if(refresh)
 	{
-		for (int seg = 0; seg < 0; ++seg)
+		for (int seg = 0; seg < 8; ++seg)
 		{
 			digitalWrite(segPin[seg], display[refreshableDisp].segment[seg]);
 		}
 		digitalWrite(display[refreshableDisp].pin, LOW);
+		refresh = false;
 		startTime = millis();
 	}
 }
@@ -102,8 +103,8 @@ void DisplayerClass::RefreshEnd()
 	if (!refresh && millis() - startTime >= 5)
 	{
 		digitalWrite(display[refreshableDisp].pin, HIGH);
-		refresh = false;
 		refreshableDisp = (refreshableDisp + 1) % dispCnt;
+		refresh = true;
 	}
 }
 

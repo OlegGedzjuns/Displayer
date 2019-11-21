@@ -27,6 +27,8 @@ void GetSymbol(char c, bool segment[8], bool dot = false)
 	}
 	if (dot)
 		segment[7] = 1;
+	else
+		segment[7] = 0;
 }
 
 #endif

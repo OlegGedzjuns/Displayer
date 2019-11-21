@@ -18,14 +18,14 @@ class DisplayerClass
 private:
 	Display* display;
 	int dispCnt;
-	short* segPin;
+	short* segPin = new short[8];
 
 	int refreshableDisp = 0;
 	unsigned long startTime;
 	bool refresh = true;
 public:
 	void Init(const short segPin_[8], const short dispCnt_, const short dispPin_[]);
-	void Show(char str[]);
+	void Show(const char str[]);
 	void Show(int num);
 	void Show(float num);
 	void RefreshStart();
