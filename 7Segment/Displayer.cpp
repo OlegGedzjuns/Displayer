@@ -1,7 +1,10 @@
 #include "Displayer.h"
 #include "DisplayEncoding.h"
 
-void DisplayerClass::Initialize(const short segmentPins[8], int displayCnt, const short displayPins[])
+// timer for interruption
+int timer1Counter;
+
+void DisplayerClass::Initialize(const short segmentPins[8], int displayCnt, const short displayPins[], int refreshRate)
 {
 	// Creating display containers, saving segment and display pins
 	// number of displays is not limited
@@ -41,6 +44,24 @@ void DisplayerClass::Initialize(const short segmentPins[8], int displayCnt, cons
 	negativeFloatBlank[displayCount + 1] = '\0';
 
 	Show(emptyBlank);
+
+
+	// initialize pseudo multithreading using interrupts
+	// https://arduinodiy.wordpress.com/2012/02/28/timer-interrupts/
+	noInterrupts();			//disable all interrupts
+	TCCR1A = 0;
+	TCCR1B = 0;
+
+
+	// Set preload timer to the correct value for our interrupt interval
+	// preload timer = clock max value - clock speed     /prescaler/goal refresh rate
+	// preload timer = 2^16            - 16MHz(atmega328)/256      /user specified refresh rate * display count
+	timer1Counter = ceil(65536 - (16000000. / 256. / (refreshRate * displayCount)));
+
+	TCNT1 = timer1Counter;	// preload timer
+	TCCR1B |= (1 << CS12);	// 256 prescaler 
+	TIMSK1 |= (1 << TOIE1);	// enable timer overflow interrupt
+	interrupts();			// enable all interrupts and start refreshing
 
 	initialized = true;
 }
@@ -128,13 +149,20 @@ void DisplayerClass::Show(float number)
 
 void DisplayerClass::Refresh()
 {
-	digitalWrite(display[refreshableDisp].pin, HIGH);
-	refreshableDisp = (refreshableDisp + 1) % displayCount;
+	digitalWrite(display[refreshableDisplay].pin, HIGH);
+	refreshableDisplay = (refreshableDisplay + 1) % displayCount;
 	for (int seg = 0; seg < 8; ++seg)
 	{
-		digitalWrite(segmentPin[seg], display[refreshableDisp].segment[seg]);
+		digitalWrite(segmentPin[seg], display[refreshableDisplay].segment[seg]);
 	}
-	digitalWrite(display[refreshableDisp].pin, LOW);
+	digitalWrite(display[refreshableDisplay].pin, LOW);
 }
 
 DisplayerClass Displayer;
+
+// Interrupt Service Routine - will execute the specified code when the timer overflows
+ISR(TIMER1_OVF_vect)
+{
+	TCNT1 = timer1Counter;
+	Displayer.Refresh();
+}

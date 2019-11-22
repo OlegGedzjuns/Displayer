@@ -18,21 +18,21 @@ struct Display
 class DisplayerClass
 {
 private:
+	bool initialized = false;
+
 	Display* display;
 	int displayCount;
 	short segmentPin[8];
 
 	// current display for async refreshing
-	int refreshableDisp = 0;
-
-	bool initialized = false;
+	int refreshableDisplay = 0;
 
 	// blanks
 	char* emptyBlank;
 	char* negativeIntBlank;
 	char* negativeFloatBlank;
 public:
-	void Initialize(const short segmentPins[8], int displayCnt, const short displayPins[]);
+	void Initialize(const short segmentPins[8], int displayCnt, const short displayPins[], int refreshRate);
 	void Show(const char cstring[] = "");
 	void Show(int number);
 	void Show(float number);

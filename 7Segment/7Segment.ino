@@ -16,48 +16,23 @@ DallasTemperature Sensors(&OneWireManager);
 
 void updateThermometer()
 {
-	// Requests all possible devices on 1-wire, even if they are not connected
-	// The number of devices is hard coded in the header of the 1-wire library, standard value 15
+	// Requests all possible devices on 1-Wire, even if they are not connected
+	// The number of devices is hard coded in the header of the 1-Wire library, standard value is 15
 	Sensors.requestTemperatures();
 
 	// Only requests from one device, many times faster
+	// no need when using interrupts, does not stop the refresh loop
 	//Sensors.requestTemperaturesByIndex(0);
 
 	Displayer.Show(Sensors.getTempCByIndex(0));
 }
 
-int timer1_counter;
-
-ISR(TIMER1_OVF_vect)
-{
-	TCNT1 = timer1_counter;
-	Displayer.Refresh();
-}
-
 void setup()
 {
-	// Arduino pseudo multithreading using interrupts
-	// http://www.hobbytronics.co.uk/arduino-timer-interrupts
-	noInterrupts();
-
-	TCCR1A = 0;
-	TCCR1B = 0;
-
-	// Set timer1_counter to the correct value for our interrupt interval
-	//timer1_counter = 64911;   // preload timer 65536-16MHz/256/100Hz
-	//timer1_counter = 64286;   // preload timer 65536-16MHz/256/50Hz
-	//timer1_counter = 34286;
-	timer1_counter = 65200;
-
-	TCNT1 = timer1_counter;   // preload timer
-	TCCR1B |= (1 << CS12);    // 256 prescaler 
-	TIMSK1 |= (1 << TOIE1);   // enable timer overflow interrupt
-	interrupts();             // enable all interrupts
-	
 	Sensors.begin();
 	const short segmentPins[] = { 2, 3, 4, 5, 6, 7, 8, 9 };
 	const short digitPins[] = { 13, 11, 10 };
-	Displayer.Initialize(segmentPins, sizeof digitPins / sizeof(short), digitPins);
+	Displayer.Initialize(segmentPins, sizeof digitPins / sizeof(short), digitPins, 60);
 }
 
 void loop()
