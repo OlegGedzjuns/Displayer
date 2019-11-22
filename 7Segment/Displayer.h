@@ -25,10 +25,8 @@ private:
 	// current display for async refreshing
 	int refreshableDisplay = 0;
 
-	// blanks
+	// blank for initializing new c strings
 	char* emptyBlank;
-	char* negativeIntBlank;
-	char* negativeFloatBlank;
 public:
 	void Initialize(const short segmentPins[8], int displayCnt, const short displayPins[], int refreshRate);
 	void Show(const char cstring[] = "");

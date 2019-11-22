@@ -57,20 +57,11 @@ void DisplayerClass::Initialize(const short segmentPins[8], int displayCnt, cons
 
 	// initialize all blanks
 	emptyBlank = new char[displayCount + 1];
-	negativeIntBlank = new char[displayCount + 1];
-	negativeFloatBlank = new char[displayCount + 2];
 
 	for (int i = 0; i < displayCount; ++i)
-	{
 		emptyBlank[i] = 'x';
-		negativeIntBlank[i] = '0';
-		negativeFloatBlank[i] = '0';
-	}
 
 	emptyBlank[displayCount] = '\0';
-	negativeIntBlank[displayCount] = '\0';
-	negativeFloatBlank[displayCount] = '.';
-	negativeFloatBlank[displayCount + 1] = '\0';
 
 	Show(emptyBlank);
 
@@ -102,7 +93,10 @@ void DisplayerClass::Show(const char cstring[] = "")
 		++stringPosition)
 	{
 		if (cstring[stringPosition] == '.')
-			continue;
+			if(stringPosition == 0)
+				GetSymbol(cstring[stringPosition], display[displayPosition].segment, true);
+			else
+				continue;
 		GetSymbol(cstring[stringPosition], display[displayPosition].segment, cstring[stringPosition + 1] == '.');
 		++displayPosition;
 	}
@@ -110,21 +104,24 @@ void DisplayerClass::Show(const char cstring[] = "")
 
 void DisplayerClass::Show(int number)
 {
-	if (number < 0)
-	{
-		Show(negativeIntBlank);
-		return;
-	}
-
 	// Creating new empty c string
 	char* cstringNumber = new char[displayCount + 1];
 	memcpy(cstringNumber, emptyBlank, (displayCount + 1) * sizeof(char));
 
-	for (int i = displayCount - 1; i >= 0; --i)
+	// one display segment is reserved for '-'
+	int negative = 0;
+
+	if (number < 0)
+	{
+		cstringNumber[0] = '-';
+		number *= -1;
+		negative = 1;
+	}
+	for (int i = displayCount - 1 - negative; i >= 0; --i)
 	{
 		if (number > 0)
 		{
-			cstringNumber[i] = number % 10 + '0';
+			cstringNumber[i + negative] = number % 10 + '0';
 			number /= 10;
 		}
 	}
@@ -135,40 +132,40 @@ void DisplayerClass::Show(int number)
 
 void DisplayerClass::Show(float number)
 {
-	if (number < 0)
-	{
-		Show(negativeFloatBlank);
-		return;
-	}
-
 	// Creating new empty c string
 	char* cstringNumber = new char[displayCount + 2];
 	memcpy(cstringNumber, emptyBlank, (displayCount + 2) * sizeof(char));
 	cstringNumber[displayCount + 1] = '\0';
 
+	// one display segment is reserved for '-'
+	int negative = 0;
+
+	if (number < 0)
+	{
+		cstringNumber[0] = '-';
+		number *= -1;
+		negative = 1;
+	}
+
 	//	counting the length of the integer part of a number
 	int numberLenght = 0;
 	for (int i = number; i > 0; i /= 10, ++numberLenght);
 
-	int decimalPlaces = displayCount - numberLenght;
-	// TODO: create a translation of a number into a string
-	// while preserving the maximum number of digits after the decimal point
-	//for (int i = decimalPlaces; i > 0; --i){}
-	if (decimalPlaces > 0)
-	{
-		cstringNumber[displayCount] = (int)(number * 10) % 10 + '0';
-		cstringNumber[displayCount - 1] = '.';
-	}
+	// free space for decimal digits
+	int decimalPlaces = displayCount - negative - numberLenght;
+
+	for (int i = decimalPlaces; i > 0; --i)
+		cstringNumber[displayCount - (decimalPlaces - i)] = (int)(number * (int)pow(10, i)) % 10 + '0';
+	if(decimalPlaces > 0)
+		cstringNumber[displayCount - decimalPlaces] = '.';
 	else
+		decimalPlaces = 0;
+	
+	for (int i = displayCount - 1 - decimalPlaces - negative; i >= 0; --i)
 	{
-		Show((int)number);
-		return;
-	}
-	for (int i = 1; i >= 0; --i)
-	{
-		if (number > 0)
+		if ((int)number > 0)
 		{
-			cstringNumber[i] = (int)number % 10 + '0';
+			cstringNumber[i + negative] = (int)number % 10 + '0';
 			number /= 10;
 		}
 	}
