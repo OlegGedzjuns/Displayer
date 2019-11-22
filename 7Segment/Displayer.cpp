@@ -148,4 +148,24 @@ void DisplayerClass::Refresh()
 	}
 }
 
+void DisplayerClass::RefreshTest()
+{
+	if (!refresh)
+	{
+		digitalWrite(display[refreshableDisp].pin, HIGH);
+		refreshableDisp = (refreshableDisp + 1) % displayCount;
+		refresh = true;
+	}
+	if (refresh)
+	{
+		for (int seg = 0; seg < 8; ++seg)
+		{
+			digitalWrite(segmentPin[seg], display[refreshableDisp].segment[seg]);
+		}
+		digitalWrite(display[refreshableDisp].pin, LOW);
+		refresh = false;
+		startTime = millis();
+	}
+}
+
 DisplayerClass Displayer;

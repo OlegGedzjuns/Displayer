@@ -43,6 +43,7 @@ public:
 	void Show(int number);
 	void Show(float number);
 	void Refresh();
+	void RefreshTest();
 };
 
 extern DisplayerClass Displayer;

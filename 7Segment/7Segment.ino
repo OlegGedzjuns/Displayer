@@ -9,7 +9,7 @@
 #include "Displayer.h"
 
 // Setup a 1-Wire manager to communicate with any 1-Wire devices
-constexpr auto ONE_WIRE_BUS = 13;
+constexpr auto ONE_WIRE_BUS = 12;
 OneWire OneWireManager(ONE_WIRE_BUS);
 
 // Link Dallas Temperature with One Wire Manager
@@ -31,28 +31,56 @@ void updateThermometer()
 
 	// Only requests from one device, many times faster
 	Sensors.requestTemperaturesByIndex(0);
+	float temperature = Sensors.getTempCByIndex(0);
+	Serial.println(temperature);
+	Displayer.Show(temperature);
+}
 
-	Displayer.Show(Sensors.getTempCByIndex(0));
+int timer1_counter;
+
+ISR(TIMER1_OVF_vect)
+{
+	TCNT1 = timer1_counter;
+	Displayer.RefreshTest();
 }
 
 TimedAction NumberThread = TimedAction(100, incrementNumber);
-TimedAction ThermometerThread = TimedAction(3000, updateThermometer);
+TimedAction ThermometerThread = TimedAction(1000, updateThermometer);
 
 void setup()
 {
+	// Arduino pseudo multithreading using interrupts
+	// http://www.hobbytronics.co.uk/arduino-timer-interrupts
+	noInterrupts();
+
+	TCCR1A = 0;
+	TCCR1B = 0;
+
+	// Set timer1_counter to the correct value for our interrupt interval
+	//timer1_counter = 64911;   // preload timer 65536-16MHz/256/100Hz
+	//timer1_counter = 64286;   // preload timer 65536-16MHz/256/50Hz
+	//timer1_counter = 34286;
+	timer1_counter = 65200;
+
+	TCNT1 = timer1_counter;   // preload timer
+	TCCR1B |= (1 << CS12);    // 256 prescaler 
+	TIMSK1 |= (1 << TOIE1);   // enable timer overflow interrupt
+	interrupts();             // enable all interrupts
+	
+	Serial.begin(9600);
 	Sensors.begin();
 	const short segmentPins[] = { 2, 3, 4, 5, 6, 7, 8, 9 };
-	const short digitPins[] = { 12, 11, 10 };
+	const short digitPins[] = { 13, 11, 10 };
 	Displayer.Initialize(segmentPins, sizeof digitPins / sizeof(short), digitPins, 60);
 }
 
 void loop()
 {
 	// Simple timer
-	NumberThread.check();
+	//NumberThread.check();
 
 	// Thermometer using 1-Wire
-	//ThermometerThread.check();
+	ThermometerThread.check();
 
-	Displayer.Refresh();
+	//Displayer.Refresh();
 }
