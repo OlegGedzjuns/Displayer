@@ -1,109 +1,149 @@
 #include "Displayer.h"
 #include "DisplayEncoding.h"
 
-void DisplayerClass::Init(const short segPin_[8], const short dispCnt_, const short dispPin_[])
+void DisplayerClass::Initialize(const short segmentPins[8], int displayCnt, const short displayPins[], int refreshRate)
 {
-	// Creating display containers, saving segment and display pins 
-	dispCnt = dispCnt_;
-	display = new Display[dispCnt];
-	memcpy(segPin, segPin_, sizeof(segPin_) * sizeof(short));
+	// Creating display containers, saving segment and display pins
+	// number of displays is not limited
+	displayCount = displayCnt;
+	display = new Display[displayCount];
+	memcpy(segmentPin, segmentPins, 8 * sizeof(short));
 
-	for (int seg = 0; seg < 8; ++seg)
+	// disable all pins until the first refresh
+	for (int segment = 0; segment < 8; ++segment)
 	{
-		pinMode(segPin[seg], OUTPUT);
-		digitalWrite(segPin[seg], LOW);
+		pinMode(segmentPin[segment], OUTPUT);
+		digitalWrite(segmentPin[segment], LOW);
 	}
-	for (int disp = 0; disp < dispCnt; ++disp)
+	// disable all cathodes until the first refresh and copy display pins
+	for (int disp = 0; disp < displayCount; ++disp)
 	{
-		display[disp].pin = dispPin_[disp];
+		display[disp].pin = displayPins[disp];
 		pinMode(display[disp].pin, OUTPUT);
 		digitalWrite(display[disp].pin, HIGH);
 	}
-	Show("xxx");
+
+	// initialize all blanks
+	emptyBlank = new char[displayCount + 1];
+	negativeIntBlank = new char[displayCount + 1];
+	negativeFloatBlank = new char[displayCount + 2];
+
+	for (int i = 0; i < displayCount; ++i)
+	{
+		emptyBlank[i] = 'x';
+		negativeIntBlank[i] = '0';
+		negativeFloatBlank[i] = '0';
+	}
+
+	emptyBlank[displayCount] = '\0';
+	negativeIntBlank[displayCount] = '\0';
+	negativeFloatBlank[displayCount] = '.';
+	negativeFloatBlank[displayCount + 1] = '\0';
+
+	Show(emptyBlank);
+
+	delay = floor(1000. / refreshRate / displayCount);
+
+	initialized = true;
 }
 
-void DisplayerClass::Show(const char c[] = "")
+void DisplayerClass::Show(const char cstring[] = "")
 {
-	for (int dispPos = 0, strPos = 0; c[strPos] != '\0' && dispPos < 3; ++strPos)
+	for (int displayPosition = 0, stringPosition = 0;
+		cstring[stringPosition] != '\0' && displayPosition < displayCount;
+		++stringPosition)
 	{
-		if (c[strPos] == '.')
+		if (cstring[stringPosition] == '.')
 			continue;
-		GetSymbol(c[strPos], display[dispPos].segment, c[strPos + 1] == '.');
-		++dispPos;
+		GetSymbol(cstring[stringPosition], display[displayPosition].segment, cstring[stringPosition + 1] == '.');
+		++displayPosition;
 	}
 }
 
-void DisplayerClass::Show(int num)
+void DisplayerClass::Show(int number)
 {
-	if (num <= 0)
+	if (number <= 0)
 	{
-		Show("000");
+		Show(negativeIntBlank);
 		return;
 	}
 
-	char cnum[] = { 1, 1, 1, 0 };
-	for (int i = 2; i >= 0; --i)
+	// Creating new empty c string
+	char* cstringNumber = new char[displayCount + 1];
+	memcpy(cstringNumber, emptyBlank, (displayCount + 1) * sizeof(char));
+
+	for (int i = displayCount - 1; i >= 0; --i)
 	{
-		if (num > 0)
+		if (number > 0)
 		{
-			cnum[i] = num % 10 + '0';
-			num /= 10;
+			cstringNumber[i] = number % 10 + '0';
+			number /= 10;
 		}
 	}
 
-	Show(cnum);
+	Show(cstringNumber);
+	delete[] cstringNumber;
 }
 
-void DisplayerClass::Show(float num)
+void DisplayerClass::Show(float number)
 {
-	if (num <= 0)
+	if (number <= 0)
 	{
-		Show("000.");
+		Show(negativeFloatBlank);
 		return;
 	}
 
-	char cnum[] = { 1, 1, 1, '.', 0 };
-	int len = 0;
-	for (int i = num; i > 0 && len < 3; i /= 10, ++len);
-	if (len < 3)
+	// Creating new empty c string
+	char* cstringNumber = new char[displayCount + 2];
+	memcpy(cstringNumber, emptyBlank, (displayCount + 2) * sizeof(char));
+	cstringNumber[displayCount + 1] = '\0';
+
+	//	counting the length of the integer part of a number
+	int numberLenght = 0;
+	for (int i = number; i > 0; i /= 10, ++numberLenght);
+
+	int decimalPlaces = displayCount - numberLenght;
+	// TODO: create a translation of a number into a string
+	// while preserving the maximum number of digits after the decimal point
+	//for (int i = decimalPlaces; i > 0; --i){}
+	if (decimalPlaces > 0)
 	{
-		cnum[4] = (int)(num * 10) % 10 + '0';
-		cnum[3] = '.';
+		cstringNumber[displayCount] = (int)(number * 10) % 10 + '0';
+		cstringNumber[displayCount - 1] = '.';
 	}
 	else
-		Show((int)num);
+	{
+		Show((int)number);
+		return;
+	}
 	for (int i = 1; i >= 0; --i)
 	{
-		if (num > 0)
+		if (number > 0)
 		{
-			cnum[i] = (int)num % 10 + '0';
-			num /= 10;
+			cstringNumber[i] = (int)number % 10 + '0';
+			number /= 10;
 		}
 	}
+	Show(cstringNumber);
+	delete[] cstringNumber;
 }
 
-void DisplayerClass::RefreshStart()
+void DisplayerClass::Refresh()
 {
-	// light up display 
-	if(refresh)
+	if (refresh)
 	{
 		for (int seg = 0; seg < 8; ++seg)
 		{
-			digitalWrite(segPin[seg], display[refreshableDisp].segment[seg]);
+			digitalWrite(segmentPin[seg], display[refreshableDisp].segment[seg]);
 		}
 		digitalWrite(display[refreshableDisp].pin, LOW);
 		refresh = false;
 		startTime = millis();
 	}
-}
-
-void DisplayerClass::RefreshEnd()
-{
-	// Change display 
-	if (!refresh && millis() - startTime >= 5)
+	else if (millis() - startTime >= 5)
 	{
 		digitalWrite(display[refreshableDisp].pin, HIGH);
-		refreshableDisp = (refreshableDisp + 1) % dispCnt;
+		refreshableDisp = (refreshableDisp + 1) % displayCount;
 		refresh = true;
 	}
 }
