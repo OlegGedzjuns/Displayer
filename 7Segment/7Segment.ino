@@ -35,24 +35,24 @@ void updateThermometer()
 	Displayer.Show(Sensors.getTempCByIndex(0));
 }
 
-TimedAction NumberThread = TimedAction(500, incrementNumber);
+TimedAction NumberThread = TimedAction(100, incrementNumber);
 TimedAction ThermometerThread = TimedAction(3000, updateThermometer);
 
 void setup()
 {
 	Sensors.begin();
 	const short segmentPins[] = { 2, 3, 4, 5, 6, 7, 8, 9 };
-	const short digitPins[] = { 10, 11, 12 };
+	const short digitPins[] = { 12, 11, 10 };
 	Displayer.Initialize(segmentPins, sizeof digitPins / sizeof(short), digitPins, 60);
 }
 
 void loop()
 {
 	// Simple timer
-	// NumberThread.check();
+	NumberThread.check();
 
 	// Thermometer using 1-Wire
-	ThermometerThread.check();
+	//ThermometerThread.check();
 
 	Displayer.Refresh();
 }

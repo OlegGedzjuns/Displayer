@@ -62,7 +62,7 @@ void DisplayerClass::Show(const char cstring[] = "")
 
 void DisplayerClass::Show(int number)
 {
-	if (number <= 0)
+	if (number < 0)
 	{
 		Show(negativeIntBlank);
 		return;
@@ -87,7 +87,7 @@ void DisplayerClass::Show(int number)
 
 void DisplayerClass::Show(float number)
 {
-	if (number <= 0)
+	if (number < 0)
 	{
 		Show(negativeFloatBlank);
 		return;
