@@ -119,7 +119,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="DisplayEncoding.h" />
     <ClInclude Include="Displayer.h" />
     <ClInclude Include="__vm\.7Segment.vsarduino.h" />
   </ItemGroup>

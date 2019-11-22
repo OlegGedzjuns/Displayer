@@ -1,5 +1,34 @@
 #include "Displayer.h"
-#include "DisplayEncoding.h"
+
+void GetSymbol(char c, bool segment[8], bool dot = false)
+{
+	switch (c)
+	{
+		case '1': { bool src[] = { 0,1,1,0,0,0,0 }; memcpy(segment, src, 7); break; }
+		case '2': { bool src[] = { 1,1,0,1,1,0,1 }; memcpy(segment, src, 7); break; }
+		case '3': { bool src[] = { 1,1,1,1,0,0,1 }; memcpy(segment, src, 7); break; }
+		case '4': { bool src[] = { 0,1,1,0,0,1,1 }; memcpy(segment, src, 7); break; }
+		case '5': { bool src[] = { 1,0,1,1,0,1,1 }; memcpy(segment, src, 7); break; }
+		case '6': { bool src[] = { 1,0,1,1,1,1,1 }; memcpy(segment, src, 7); break; }
+		case '7': { bool src[] = { 1,1,1,0,0,0,0 }; memcpy(segment, src, 7); break; }
+		case '8': { bool src[] = { 1,1,1,1,1,1,1 }; memcpy(segment, src, 7); break; }
+		case '9': { bool src[] = { 1,1,1,1,0,1,1 }; memcpy(segment, src, 7); break; }
+		case '0': { bool src[] = { 1,1,1,1,1,1,0 }; memcpy(segment, src, 7); break; }
+		case 'A': { bool src[] = { 1,1,1,0,1,1,1 }; memcpy(segment, src, 7); break; }
+		case 'B': { bool src[] = { 0,0,1,1,1,1,0 }; memcpy(segment, src, 7); break; }
+		case 'C': { bool src[] = { 1,0,0,1,1,1,0 }; memcpy(segment, src, 7); break; }
+		case 'D': { bool src[] = { 0,1,1,1,1,0,1 }; memcpy(segment, src, 7); break; }
+		case 'E': { bool src[] = { 1,0,0,1,1,1,1 }; memcpy(segment, src, 7); break; }
+		case 'F': { bool src[] = { 1,0,0,0,1,1,1 }; memcpy(segment, src, 7); break; }
+		case '-': { bool src[] = { 0,0,0,0,0,0,1 }; memcpy(segment, src, 7); break; }
+		case'x':
+		default: { bool src[] = { 0,0,0,0,0,0,0 }; memcpy(segment, src, 7); break; }
+	}
+	if (dot)
+		segment[7] = 1;
+	else
+		segment[7] = 0;
+}
 
 // timer for interruption
 int timer1Counter;
@@ -56,7 +85,7 @@ void DisplayerClass::Initialize(const short segmentPins[8], int displayCnt, cons
 	// Set preload timer to the correct value for our interrupt interval
 	// preload timer = clock max value - clock speed     /prescaler/goal refresh rate
 	// preload timer = 2^16            - 16MHz(atmega328)/256      /user specified refresh rate * display count
-	timer1Counter = ceil(65536 - (16000000. / 256. / (refreshRate * displayCount)));
+	timer1Counter = ceil(65536         - (F_CPU          /256.     /(refreshRate * displayCount)));
 
 	TCNT1 = timer1Counter;	// preload timer
 	TCCR1B |= (1 << CS12);	// 256 prescaler 
