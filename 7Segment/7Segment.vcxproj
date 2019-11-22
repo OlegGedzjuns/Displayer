@@ -115,10 +115,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\arduino folders read me.txt">
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="Displayer.h" />
     <ClInclude Include="__vm\.7Segment.vsarduino.h" />
   </ItemGroup>
