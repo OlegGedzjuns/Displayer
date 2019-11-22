@@ -93,8 +93,12 @@ void DisplayerClass::Show(const char cstring[] = "")
 		++stringPosition)
 	{
 		if (cstring[stringPosition] == '.')
-			if(stringPosition == 0)
-				GetSymbol(cstring[stringPosition], display[displayPosition].segment, true);
+			if (stringPosition == 0)
+			{
+				GetSymbol('0', display[displayPosition].segment, true);
+				++displayPosition;
+				continue;
+			}
 			else
 				continue;
 		GetSymbol(cstring[stringPosition], display[displayPosition].segment, cstring[stringPosition + 1] == '.');
