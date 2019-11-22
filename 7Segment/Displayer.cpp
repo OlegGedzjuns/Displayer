@@ -1,7 +1,7 @@
 #include "Displayer.h"
 #include "DisplayEncoding.h"
 
-void DisplayerClass::Initialize(const short segmentPins[8], int displayCnt, const short displayPins[], int refreshRate)
+void DisplayerClass::Initialize(const short segmentPins[8], int displayCnt, const short displayPins[])
 {
 	// Creating display containers, saving segment and display pins
 	// number of displays is not limited
@@ -41,8 +41,6 @@ void DisplayerClass::Initialize(const short segmentPins[8], int displayCnt, cons
 	negativeFloatBlank[displayCount + 1] = '\0';
 
 	Show(emptyBlank);
-
-	delay = floor(1000. / refreshRate / displayCount);
 
 	initialized = true;
 }
@@ -130,42 +128,13 @@ void DisplayerClass::Show(float number)
 
 void DisplayerClass::Refresh()
 {
-	if (refresh)
+	digitalWrite(display[refreshableDisp].pin, HIGH);
+	refreshableDisp = (refreshableDisp + 1) % displayCount;
+	for (int seg = 0; seg < 8; ++seg)
 	{
-		for (int seg = 0; seg < 8; ++seg)
-		{
-			digitalWrite(segmentPin[seg], display[refreshableDisp].segment[seg]);
-		}
-		digitalWrite(display[refreshableDisp].pin, LOW);
-		refresh = false;
-		startTime = millis();
+		digitalWrite(segmentPin[seg], display[refreshableDisp].segment[seg]);
 	}
-	else if (millis() - startTime >= 5)
-	{
-		digitalWrite(display[refreshableDisp].pin, HIGH);
-		refreshableDisp = (refreshableDisp + 1) % displayCount;
-		refresh = true;
-	}
-}
-
-void DisplayerClass::RefreshTest()
-{
-	if (!refresh)
-	{
-		digitalWrite(display[refreshableDisp].pin, HIGH);
-		refreshableDisp = (refreshableDisp + 1) % displayCount;
-		refresh = true;
-	}
-	if (refresh)
-	{
-		for (int seg = 0; seg < 8; ++seg)
-		{
-			digitalWrite(segmentPin[seg], display[refreshableDisp].segment[seg]);
-		}
-		digitalWrite(display[refreshableDisp].pin, LOW);
-		refresh = false;
-		startTime = millis();
-	}
+	digitalWrite(display[refreshableDisp].pin, LOW);
 }
 
 DisplayerClass Displayer;

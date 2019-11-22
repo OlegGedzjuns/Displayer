@@ -24,26 +24,19 @@ private:
 
 	// current display for async refreshing
 	int refreshableDisp = 0;
-	// delay on each display needed to achieve refresh rate
-	int delay;
-	// time when refresh started
-	unsigned long startTime;
-	// true if the next display should light up
-	bool refresh = true;
 
 	bool initialized = false;
 
-	// blanks to display negative values
+	// blanks
 	char* emptyBlank;
 	char* negativeIntBlank;
 	char* negativeFloatBlank;
 public:
-	void Initialize(const short segmentPins[8], int displayCnt, const short displayPins[], int refreshRate);
+	void Initialize(const short segmentPins[8], int displayCnt, const short displayPins[]);
 	void Show(const char cstring[] = "");
 	void Show(int number);
 	void Show(float number);
 	void Refresh();
-	void RefreshTest();
 };
 
 extern DisplayerClass Displayer;
