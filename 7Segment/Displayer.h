@@ -7,20 +7,18 @@
 #include "WProgram.h"
 #endif
 
-struct Display
-{
-	// state of each segment for each display from a to DP
-	bool segment[8];
-	// pin to which the display is connected
-	short pin;
-};
-
 class DisplayerClass
 {
 private:
 	bool initialized = false;
 
-	Display* display;
+	struct Display
+	{
+		// state of each segment for each display from a to DP
+		bool segment[8];
+		// pin to which the display is connected
+		short pin;
+	}* display;
 	int displayCount;
 	short segmentPin[8];
 
