@@ -9,12 +9,12 @@
 - user specified refresh rate (+/- 3Hz)
 - user specified number of displays
 - support different common pins ( cathode / anode )
-- display strings, negative or positive integer or floats
+- display strings, negative or positive integers or floats
 - support for most latin characters ( excluding K, M, V, W, X, Z )
 
 ## Guide:
 ### Instalation
- 1. Download the Displayer_vX.X.zip file added to the [lattest release version](https://github.com/SecyrBb/Displayer/releases "Releases").
+ 1. Download the Displayer_vX.X.zip file added to the [latest release](https://github.com/SecyrBb/Displayer/releases "Releases").
  2. Unzip the downloaded archive into the folder "~Documents/Arduino/libraries/"
 ### Use
  1. Include library header
@@ -25,7 +25,7 @@
 ~~~cpp
 void setup()
 {
-	// From a to DP
+	// From A to DP
 	const short segmentPins[] = { 2, 3, 4, 5, 6, 7, 8, 9 };
 	
 	// From left to right
@@ -34,11 +34,11 @@ void setup()
 	// No need to create a prototype of the Displayer class
 	Displayer.Initialize
 	(
-		Common_cathode,			// Common pin type on your display (Common_cathode or Common_anode) 
-		segmentPins,			// The array of segment pins you created 
+		Common_cathode,			 // Common pin type on your display (Common_cathode or Common_anode) 
+		segmentPins,			 // The array of segment pins you created 
 		sizeof сommonPins/ sizeof(short),// Number of indicators 
-		сommonPins,			// The array of indicator pins you created 
-		75				// Required display refresh rate 
+		сommonPins,			 // The array of indicator pins you created 
+		75				 // Required display refresh rate 
 	);
 }
 ~~~
