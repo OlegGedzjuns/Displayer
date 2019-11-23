@@ -1,6 +1,6 @@
 #include "Displayer.h"
 
-void GetSymbol(char c, char &code, bool dot = false)
+void GetSymbol(char c, char &code, bool dot, Common_ common)
 {
 	// Thanks to https://github.com/Ri0ee
 
@@ -54,6 +54,8 @@ void GetSymbol(char c, char &code, bool dot = false)
 	}
 	if (dot)
 		code += 1;
+	if (common == Common_anode)
+		code = ~code;
 }
 
 // timer for interruption
@@ -129,13 +131,13 @@ void DisplayerClass::Show(const char cstring[] = "")
 			if (cstring[stringPosition] == '.')
 				if (stringPosition == 0)
 				{
-					GetSymbol('0', display[displayPosition].segmentCode, true);
+					GetSymbol('0', display[displayPosition].segmentCode, true, common);
 					++displayPosition;
 					continue;
 				}
 				else
 					continue;
-			GetSymbol(cstring[stringPosition], display[displayPosition].segmentCode, cstring[stringPosition + 1] == '.');
+			GetSymbol(cstring[stringPosition], display[displayPosition].segmentCode, cstring[stringPosition + 1] == '.', common);
 			++displayPosition;
 		}
 	}
@@ -226,7 +228,7 @@ void DisplayerClass::Refresh()
 		refreshableDisplay = (refreshableDisplay + 1) % displayCount;
 		for (int seg = 0; seg < 8; ++seg)
 		{
-			digitalWrite(segmentPin[seg], ((display[refreshableDisplay].segmentCode << seg & 0b10000000) / 0b10000000) + common);
+			digitalWrite(segmentPin[seg], display[refreshableDisplay].segmentCode << seg & 0b10000000);
 		}
 		digitalWrite(display[refreshableDisplay].pin, LOW + common);
 	}
