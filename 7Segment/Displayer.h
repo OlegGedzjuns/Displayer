@@ -7,6 +7,8 @@
 #include "WProgram.h"
 #endif
 
+enum Common_ { Common_cathode = 0, Common_anode = 1 };
+
 class DisplayerClass
 {
 private:
@@ -27,8 +29,10 @@ private:
 
 	// blank for initializing new c strings
 	char* emptyBlank;
+
+	Common_ common;
 public:
-	void Initialize(const short segmentPins[8], int displayCnt, const short displayPins[], int refreshRate);
+	void Initialize(Common_ commonPin, const short segmentPins[8], int displayCnt, const short displayPins[], int refreshRate);
 	void Show(const char cstring[] = "");
 	void Show(int number);
 	void Show(float number);

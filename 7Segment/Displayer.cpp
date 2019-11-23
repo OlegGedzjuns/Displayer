@@ -33,7 +33,7 @@ void GetSymbol(char c, bool segment[8], bool dot = false)
 // timer for interruption
 int timer1Counter;
 
-void DisplayerClass::Initialize(const short segmentPins[8], int displayCnt, const short displayPins[], int refreshRate)
+void DisplayerClass::Initialize(Common_ commonPin, const short segmentPins[8], int displayCnt, const short displayPins[], int refreshRate)
 {
 	// Creating display containers, saving segment and display pins
 	// number of displays is not limited
@@ -41,18 +41,20 @@ void DisplayerClass::Initialize(const short segmentPins[8], int displayCnt, cons
 	display = new Display[displayCount];
 	memcpy(segmentPin, segmentPins, 8 * sizeof(short));
 
+	common = commonPin;
+
 	// disable all pins until the first refresh
 	for (int segment = 0; segment < 8; ++segment)
 	{
 		pinMode(segmentPin[segment], OUTPUT);
-		digitalWrite(segmentPin[segment], LOW);
+		digitalWrite(segmentPin[segment], LOW + common);
 	}
 	// disable all cathodes until the first refresh and copy display pins
 	for (int disp = 0; disp < displayCount; ++disp)
 	{
 		display[disp].pin = displayPins[disp];
 		pinMode(display[disp].pin, OUTPUT);
-		digitalWrite(display[disp].pin, HIGH);
+		digitalWrite(display[disp].pin, HIGH - common);
 	}
 
 	// initialize all blanks
@@ -76,7 +78,7 @@ void DisplayerClass::Initialize(const short segmentPins[8], int displayCnt, cons
 	// Set preload timer to the correct value for our interrupt interval
 	// preload timer = clock max value - clock speed     /prescaler/goal refresh rate
 	// preload timer = 2^16            - 16MHz(atmega328)/256      /user specified refresh rate * display count
-	timer1Counter = ceil(65536         - (F_CPU          /256.     /(refreshRate * displayCount)));
+	timer1Counter    = ceil(65536      - (F_CPU          /256.     /(refreshRate * displayCount)));
 
 	TCNT1 = timer1Counter;	// preload timer
 	TCCR1B |= (1 << CS12);	// 256 prescaler 
@@ -179,13 +181,13 @@ void DisplayerClass::Show(float number)
 
 void DisplayerClass::Refresh()
 {
-	digitalWrite(display[refreshableDisplay].pin, HIGH);
+	digitalWrite(display[refreshableDisplay].pin, HIGH - common);
 	refreshableDisplay = (refreshableDisplay + 1) % displayCount;
 	for (int seg = 0; seg < 8; ++seg)
 	{
 		digitalWrite(segmentPin[seg], display[refreshableDisplay].segment[seg]);
 	}
-	digitalWrite(display[refreshableDisplay].pin, LOW);
+	digitalWrite(display[refreshableDisplay].pin, LOW + common);
 }
 
 DisplayerClass Displayer;

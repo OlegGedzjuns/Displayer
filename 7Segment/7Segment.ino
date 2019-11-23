@@ -32,7 +32,7 @@ void setup()
 	Sensors.begin();
 	const short segmentPins[] = { 2, 3, 4, 5, 6, 7, 8, 9 };
 	const short digitPins[] = { 13, 11, 10 };
-	Displayer.Initialize(segmentPins, sizeof digitPins / sizeof(short), digitPins, 75);
+	Displayer.Initialize(Common_cathode, segmentPins, sizeof digitPins / sizeof(short), digitPins, 75);
 }
 
 void loop()
