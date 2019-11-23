@@ -2,6 +2,8 @@
 
 void GetSymbol(char c, char &code, bool dot = false)
 {
+	// Thanks to https://github.com/Ri0ee
+
 	switch (c)
 	{
 		case '1': { code = 0b01100000; break; }
@@ -51,7 +53,7 @@ void GetSymbol(char c, char &code, bool dot = false)
 		default: { code = 0b00000000; break; }
 	}
 	if (dot)
-		code + 1;
+		code += 1;
 }
 
 // timer for interruption
