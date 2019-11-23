@@ -17,7 +17,7 @@ private:
 	struct Display
 	{
 		// state of each segment for each display from a to DP
-		bool segment[8];
+		char segmentCode;
 		// pin to which the display is connected
 		short pin;
 	}* display;
