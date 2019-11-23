@@ -1,6 +1,7 @@
-
 # Displayer
 #### Asynchronous, flexible, customizable library for managing seven-segment indicators under Arduino control
++ Library size: 1 088 bytes
++ Minimum Memory Usage: 36 bytes
 
 ## Important! May not be compatible with Servo library
 
