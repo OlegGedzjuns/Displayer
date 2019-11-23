@@ -64,6 +64,11 @@ void DisplayerClass::Initialize(Common_ commonPin, const short segmentPins[8], i
 	// Creating display containers, saving segment and display pins
 	// number of displays is not limited
 	displayCount = displayCnt;
+	if (displayCount < 1)
+	{
+		initialized = false;
+		return;
+	}
 	display = new Display[displayCount];
 	memcpy(segmentPin, segmentPins, 8 * sizeof(short));
 
@@ -91,8 +96,6 @@ void DisplayerClass::Initialize(Common_ commonPin, const short segmentPins[8], i
 
 	emptyBlank[displayCount] = '\0';
 
-	Show(emptyBlank);
-
 
 	// initialize pseudo multithreading using interrupts
 	// https://arduinodiy.wordpress.com/2012/02/28/timer-interrupts/
@@ -112,108 +115,121 @@ void DisplayerClass::Initialize(Common_ commonPin, const short segmentPins[8], i
 	interrupts();			// enable all interrupts and start refreshing
 
 	initialized = true;
+	Show(emptyBlank);
 }
 
 void DisplayerClass::Show(const char cstring[] = "")
 {
-	for (int displayPosition = 0, stringPosition = 0;
-		cstring[stringPosition] != '\0' && displayPosition < displayCount;
-		++stringPosition)
+	if (initialized)
 	{
-		if (cstring[stringPosition] == '.')
-			if (stringPosition == 0)
-			{
-				GetSymbol('0', display[displayPosition].segmentCode, true);
-				++displayPosition;
-				continue;
-			}
-			else
-				continue;
-		GetSymbol(cstring[stringPosition], display[displayPosition].segmentCode, cstring[stringPosition + 1] == '.');
-		++displayPosition;
+		for (int displayPosition = 0, stringPosition = 0;
+			cstring[stringPosition] != '\0' && displayPosition < displayCount;
+			++stringPosition)
+		{
+			if (cstring[stringPosition] == '.')
+				if (stringPosition == 0)
+				{
+					GetSymbol('0', display[displayPosition].segmentCode, true);
+					++displayPosition;
+					continue;
+				}
+				else
+					continue;
+			GetSymbol(cstring[stringPosition], display[displayPosition].segmentCode, cstring[stringPosition + 1] == '.');
+			++displayPosition;
+		}
 	}
 }
 
 void DisplayerClass::Show(int number)
 {
-	// Creating new empty c string
-	char* cstringNumber = new char[displayCount + 1];
-	memcpy(cstringNumber, emptyBlank, (displayCount + 1) * sizeof(char));
-
-	// one display segment is reserved for '-'
-	int negative = 0;
-
-	if (number < 0)
+	if (initialized)
 	{
-		cstringNumber[0] = '-';
-		number *= -1;
-		negative = 1;
-	}
-	for (int i = displayCount - 1 - negative; i >= 0; --i)
-	{
-		if (number > 0)
+		// Creating new empty c string
+		char* cstringNumber = new char[displayCount + 1];
+		memcpy(cstringNumber, emptyBlank, (displayCount + 1) * sizeof(char));
+
+		// one display segment is reserved for '-'
+		int negative = 0;
+
+		if (number < 0)
 		{
-			cstringNumber[i + negative] = number % 10 + '0';
-			number /= 10;
+			cstringNumber[0] = '-';
+			number *= -1;
+			negative = 1;
 		}
-	}
+		for (int i = displayCount - 1 - negative; i >= 0; --i)
+		{
+			if (number > 0)
+			{
+				cstringNumber[i + negative] = number % 10 + '0';
+				number /= 10;
+			}
+		}
 
-	Show(cstringNumber);
-	delete[] cstringNumber;
+		Show(cstringNumber);
+		delete[] cstringNumber;
+	}
 }
 
 void DisplayerClass::Show(float number)
 {
-	// Creating new empty c string
-	char* cstringNumber = new char[displayCount + 2];
-	memcpy(cstringNumber, emptyBlank, (displayCount + 2) * sizeof(char));
-	cstringNumber[displayCount + 1] = '\0';
-
-	// one display segment is reserved for '-'
-	int negative = 0;
-
-	if (number < 0)
+	if (initialized)
 	{
-		cstringNumber[0] = '-';
-		number *= -1;
-		negative = 1;
-	}
+		// Creating new empty c string
+		char* cstringNumber = new char[displayCount + 2];
+		memcpy(cstringNumber, emptyBlank, (displayCount + 2) * sizeof(char));
+		cstringNumber[displayCount + 1] = '\0';
 
-	//	counting the length of the integer part of a number
-	int numberLenght = 0;
-	for (int i = number; i > 0; i /= 10, ++numberLenght);
+		// one display segment is reserved for '-'
+		int negative = 0;
 
-	// free space for decimal digits
-	int decimalPlaces = displayCount - negative - numberLenght;
-
-	for (int i = decimalPlaces; i > 0; --i)
-		cstringNumber[displayCount - (decimalPlaces - i)] = (int)(number * (int)pow(10, i)) % 10 + '0';
-	if(decimalPlaces > 0)
-		cstringNumber[displayCount - decimalPlaces] = '.';
-	else
-		decimalPlaces = 0;
-	
-	for (int i = displayCount - 1 - decimalPlaces - negative; i >= 0; --i)
-	{
-		if ((int)number > 0)
+		if (number < 0)
 		{
-			cstringNumber[i + negative] = (int)number % 10 + '0';
-			number /= 10;
+			cstringNumber[0] = '-';
+			number *= -1;
+			negative = 1;
 		}
+
+		//	counting the length of the integer part of a number
+		int numberLenght = 0;
+		for (int i = number; i > 0; i /= 10, ++numberLenght);
+
+		// free space for decimal digits
+		int decimalPlaces = displayCount - negative - numberLenght;
+
+		for (int i = decimalPlaces; i > 0; --i)
+			cstringNumber[displayCount - (decimalPlaces - i)] = (int)(number * (int)pow(10, i)) % 10 + '0';
+		if (decimalPlaces > 0)
+			cstringNumber[displayCount - decimalPlaces] = '.';
+		else
+			decimalPlaces = 0;
+
+		for (int i = displayCount - 1 - decimalPlaces - negative; i >= 0; --i)
+		{
+			if ((int)number > 0)
+			{
+				cstringNumber[i + negative] = (int)number % 10 + '0';
+				number /= 10;
+			}
+		}
+		Show(cstringNumber);
+		delete[] cstringNumber;
 	}
-	Show(cstringNumber);
-	delete[] cstringNumber;
 }
 
 void DisplayerClass::Refresh()
 {
-	digitalWrite(display[refreshableDisplay].pin, HIGH - common);
-	refreshableDisplay = (refreshableDisplay + 1) % displayCount;
-	for (int seg = 0; seg < 8; ++seg)
+	if (initialized)
 	{
-		digitalWrite(segmentPin[seg], ((display[refreshableDisplay].segmentCode << seg & 0b10000000) / 0b10000000) + common);
+		digitalWrite(display[refreshableDisplay].pin, HIGH - common);
+		refreshableDisplay = (refreshableDisplay + 1) % displayCount;
+		for (int seg = 0; seg < 8; ++seg)
+		{
+			digitalWrite(segmentPin[seg], ((display[refreshableDisplay].segmentCode << seg & 0b10000000) / 0b10000000) + common);
+		}
+		digitalWrite(display[refreshableDisplay].pin, LOW + common);
 	}
-	digitalWrite(display[refreshableDisplay].pin, LOW + common);
 }
 
 DisplayerClass Displayer;
