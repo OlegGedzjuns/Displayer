@@ -1,59 +1,59 @@
 #include "Displayer.h"
 
-void GetSymbol(char c, bool segment[8], bool dot = false)
+void GetSymbol(char c, char &code, bool dot = false)
 {
+	// Thanks to https://github.com/Ri0ee
+
 	switch (c)
 	{
-		case '1': { bool src[] = { 0,1,1,0,0,0,0 }; memcpy(segment, src, 7); break; }
-		case '2': { bool src[] = { 1,1,0,1,1,0,1 }; memcpy(segment, src, 7); break; }
-		case '3': { bool src[] = { 1,1,1,1,0,0,1 }; memcpy(segment, src, 7); break; }
-		case '4': { bool src[] = { 0,1,1,0,0,1,1 }; memcpy(segment, src, 7); break; }
-		case '5': { bool src[] = { 1,0,1,1,0,1,1 }; memcpy(segment, src, 7); break; }
-		case '6': { bool src[] = { 1,0,1,1,1,1,1 }; memcpy(segment, src, 7); break; }
-		case '7': { bool src[] = { 1,1,1,0,0,0,0 }; memcpy(segment, src, 7); break; }
-		case '8': { bool src[] = { 1,1,1,1,1,1,1 }; memcpy(segment, src, 7); break; }
-		case '9': { bool src[] = { 1,1,1,1,0,1,1 }; memcpy(segment, src, 7); break; }
-		case '0': { bool src[] = { 1,1,1,1,1,1,0 }; memcpy(segment, src, 7); break; }
-		case 'A': { bool src[] = { 1,1,1,0,1,1,1 }; memcpy(segment, src, 7); break; }
-		case 'a': { bool src[] = { 1,1,1,1,1,0,1 }; memcpy(segment, src, 7); break; }
-		case 'B': { bool src[] = { 0,0,1,1,1,1,0 }; memcpy(segment, src, 7); break; }
-		case 'C': { bool src[] = { 1,0,0,1,1,1,0 }; memcpy(segment, src, 7); break; }
-		case 'c': { bool src[] = { 0,0,0,1,1,0,1 }; memcpy(segment, src, 7); break; }
-		case 'D': { bool src[] = { 0,1,1,1,1,0,1 }; memcpy(segment, src, 7); break; }
-		case 'E': { bool src[] = { 1,0,0,1,1,1,1 }; memcpy(segment, src, 7); break; }
-		case 'e': { bool src[] = { 1,1,0,1,1,1,1 }; memcpy(segment, src, 7); break; }
-		case 'F': { bool src[] = { 1,0,0,0,1,1,1 }; memcpy(segment, src, 7); break; }
-		case 'G': { bool src[] = { 1,0,1,1,1,1,0 }; memcpy(segment, src, 7); break; }
-		case 'H': { bool src[] = { 0,1,1,0,1,1,1 }; memcpy(segment, src, 7); break; }
-		case 'h': { bool src[] = { 0,0,1,0,1,1,1 }; memcpy(segment, src, 7); break; }
-		case 'I': { bool src[] = { 0,0,1,0,0,0,0 }; memcpy(segment, src, 7); break; }
-		case 'J': { bool src[] = { 0,1,1,1,1,0,0 }; memcpy(segment, src, 7); break; }
-		case 'L': { bool src[] = { 0,0,0,1,1,1,0 }; memcpy(segment, src, 7); break; }
-		case 'l': { bool src[] = { 0,0,0,1,1,0,0 }; memcpy(segment, src, 7); break; }
-		case 'N': { bool src[] = { 1,1,1,0,1,1,0 }; memcpy(segment, src, 7); break; }
-		case 'n': { bool src[] = { 0,0,1,0,1,0,1 }; memcpy(segment, src, 7); break; }
-		case 'O': { bool src[] = { 0,0,1,1,1,0,1 }; memcpy(segment, src, 7); break; }
-		case 'P': { bool src[] = { 1,1,0,0,1,1,1 }; memcpy(segment, src, 7); break; }
-		case 'Q': { bool src[] = { 1,1,1,0,0,1,1 }; memcpy(segment, src, 7); break; }
-		case 'R': { bool src[] = { 1,0,0,0,1,1,0 }; memcpy(segment, src, 7); break; }
-		case 'r': { bool src[] = { 0,0,0,0,1,0,1 }; memcpy(segment, src, 7); break; }
-		case 'S': { bool src[] = { 1,0,1,1,0,1,1 }; memcpy(segment, src, 7); break; }
-		case 'T': { bool src[] = { 0,0,0,1,1,1,1 }; memcpy(segment, src, 7); break; }
-		case 'U': { bool src[] = { 0,1,1,1,1,1,0 }; memcpy(segment, src, 7); break; }
-		case 'u': { bool src[] = { 0,0,1,1,1,0,0 }; memcpy(segment, src, 7); break; }
-		case 'Y': { bool src[] = { 0,1,1,1,0,1,1 }; memcpy(segment, src, 7); break; }
-		case '=': { bool src[] = { 0,0,0,1,0,0,1 }; memcpy(segment, src, 7); break; }
-		case '-': { bool src[] = { 0,0,0,0,0,0,1 }; memcpy(segment, src, 7); break; }
-		case '_': { bool src[] = { 0,0,0,1,0,0,0 }; memcpy(segment, src, 7); break; }
-		case '"': { bool src[] = { 0,1,0,0,0,1,0 }; memcpy(segment, src, 7); break; }
-		case '\'':{ bool src[] = { 0,0,0,0,0,1,0 }; memcpy(segment, src, 7); break; }
+		case '1': { code = 0b01100000; break; }
+		case '2': { code = 0b11011010; break; }
+		case '3': { code = 0b11110010; break; }
+		case '4': { code = 0b01100110; break; }
+		case '5': { code = 0b10110110; break; }
+		case '6': { code = 0b10111110; break; }
+		case '7': { code = 0b11100000; break; }
+		case '8': { code = 0b11111110; break; }
+		case '9': { code = 0b11110110; break; }
+		case '0': { code = 0b11111100; break; }
+		case 'A': { code = 0b11101110; break; }
+		case 'a': { code = 0b11111010; break; }
+		case 'B': { code = 0b00111100; break; }
+		case 'C': { code = 0b10011100; break; }
+		case 'c': { code = 0b00011010; break; }
+		case 'D': { code = 0b01111010; break; }
+		case 'E': { code = 0b10011110; break; }
+		case 'e': { code = 0b11011110; break; }
+		case 'F': { code = 0b10001110; break; }
+		case 'G': { code = 0b10111100; break; }
+		case 'H': { code = 0b01101110; break; }
+		case 'h': { code = 0b00101110; break; }
+		case 'I': { code = 0b00100000; break; }
+		case 'J': { code = 0b01111000; break; }
+		case 'L': { code = 0b00011100; break; }
+		case 'l': { code = 0b00011000; break; }
+		case 'N': { code = 0b11101100; break; }
+		case 'n': { code = 0b00101010; break; }
+		case 'O': { code = 0b00111010; break; }
+		case 'P': { code = 0b11001110; break; }
+		case 'Q': { code = 0b11100110; break; }
+		case 'R': { code = 0b10001100; break; }
+		case 'r': { code = 0b00001010; break; }
+		case 'S': { code = 0b10110110; break; }
+		case 'T': { code = 0b00011110; break; }
+		case 'U': { code = 0b01111100; break; }
+		case 'u': { code = 0b00111000; break; }
+		case 'Y': { code = 0b01110110; break; }
+		case '=': { code = 0b00010010; break; }
+		case '-': { code = 0b00000010; break; }
+		case '_': { code = 0b00010000; break; }
+		case '"': { code = 0b01000100; break; }
+		case '\'':{ code = 0b00000100; break; }
 		case'x':
-		default: { bool src[] = { 0,0,0,0,0,0,0 }; memcpy(segment, src, 7); break; }
+		default: { code = 0b00000000; break; }
 	}
 	if (dot)
-		segment[7] = 1;
-	else
-		segment[7] = 0;
+		code += 1;
 }
 
 // timer for interruption
@@ -123,13 +123,13 @@ void DisplayerClass::Show(const char cstring[] = "")
 		if (cstring[stringPosition] == '.')
 			if (stringPosition == 0)
 			{
-				GetSymbol('0', display[displayPosition].segment, true);
+				GetSymbol('0', display[displayPosition].segmentCode, true);
 				++displayPosition;
 				continue;
 			}
 			else
 				continue;
-		GetSymbol(cstring[stringPosition], display[displayPosition].segment, cstring[stringPosition + 1] == '.');
+		GetSymbol(cstring[stringPosition], display[displayPosition].segmentCode, cstring[stringPosition + 1] == '.');
 		++displayPosition;
 	}
 }
@@ -211,7 +211,7 @@ void DisplayerClass::Refresh()
 	refreshableDisplay = (refreshableDisplay + 1) % displayCount;
 	for (int seg = 0; seg < 8; ++seg)
 	{
-		digitalWrite(segmentPin[seg], display[refreshableDisplay].segment[seg]);
+		digitalWrite(segmentPin[seg], ((display[refreshableDisplay].segmentCode << seg & 0b10000000) / 0b10000000) + common);
 	}
 	digitalWrite(display[refreshableDisplay].pin, LOW + common);
 }
