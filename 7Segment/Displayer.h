@@ -7,32 +7,39 @@
 #include "WProgram.h"
 #endif
 
-enum Common_ { Common_cathode = 0, Common_anode = 1 };
+#define INTERRUPT_SERVICE_ROUTINE ISR
+
+#define TC1_OPERATING_MODES TCCR1A
+#define TC1_COUNT_RATE TCCR1B
+#define TC1_OVERFLOW_REACTION TIMSK1
+#define	TC1_OVERFLOW_VECTOR TIMER1_OVF_vect
+
+#define COUNTING_REGISTER TCNT1
+#define PRESCALER_256 CS12
+#define CALL_INTERRUPT_VECTOR TOIE1
+
+enum PinType { cathode = 0, anode = 1 };
 
 class DisplayerClass
 {
 private:
-	bool initialized = false;
+	bool isInitialized = false;
 
-	struct Display
+	struct Digit
 	{
-		// state of each segment for each display from a to DP
-		char segmentCode;
-		// pin to which the display is connected
-		short pin;
-	}* display;
-	int displayCount;
-	short segmentPin[8];
+		char encoding;	// state of each segment in binary representation
+		uint8_t pin;		// pin to which digit is connected
+	}*digits;
+	int numberOfDigits;
+	uint8_t segmentPins[8];	
+	PinType commonPinType;
 
-	// current display for async refreshing
-	int refreshableDisplay = 0;
+	int refreshableDigitIndex = 0;
 
 	// blank for initializing new c strings
 	char* emptyBlank;
-
-	Common_ common;
 public:
-	void Initialize(Common_ commonPin, const short segmentPins[8], int displayCnt, const short displayPins[], int refreshRate);
+	void Initialize(PinType commonPinType, uint8_t segmentPins[8], uint8_t displayPins[], int numberOfDigits, uint32_t refreshRate = 60);
 	void Show(const char cstring[] = "");
 	void Show(int number);
 	void Show(float number);

@@ -30,9 +30,9 @@ void updateThermometer()
 void setup()
 {
 	Sensors.begin();
-	const short segmentPins[] = { 2, 3, 4, 5, 6, 7, 8, 9 };
-	const short digitPins[] = { 13, 11, 10 };
-	Displayer.Initialize(Common_cathode, segmentPins, sizeof digitPins / sizeof(short), digitPins, 75);
+	uint8_t segmentPins[] = { 2, 3, 4, 5, 6, 7, 8, 9 };
+	uint8_t digitPins[] = { 13, 11, 10 };
+	Displayer.Initialize(PinType::cathode, segmentPins, digitPins, sizeof digitPins / sizeof(decltype(digitPins)), 75);
 }
 
 void loop()
