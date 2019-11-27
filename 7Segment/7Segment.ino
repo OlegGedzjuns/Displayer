@@ -32,7 +32,7 @@ void setup()
 	Sensors.begin();
 	uint8_t segmentPins[] = { 2, 3, 4, 5, 6, 7, 8, 9 };
 	uint8_t digitPins[] = { 13, 11, 10 };
-	Displayer.Initialize(PinType::cathode, segmentPins, digitPins, sizeof digitPins / sizeof(decltype(digitPins)), 75);
+	Displayer.Initialize(PinType::Cathode, segmentPins, digitPins, sizeof digitPins / sizeof(decltype(digitPins)), 75);
 }
 
 void loop()

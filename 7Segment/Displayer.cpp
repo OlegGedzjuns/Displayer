@@ -1,7 +1,8 @@
 #include "Displayer.h"
 
-void GetSymbol(char c, char& code, bool dot, PinType commonPinType)
+void DisplayerClass::Digit::SetSymbol(char c, bool dot, PinType commonPinType)
 {
+	byte code;
 	switch (c)
 	{
 		case '1': { code = B01100000; break; }
@@ -52,16 +53,15 @@ void GetSymbol(char c, char& code, bool dot, PinType commonPinType)
 	}
 	if (dot)
 		code += 1;
-	if (commonPinType == PinType::anode)
+	if (commonPinType == PinType::Anode)
 		code = ~code;	// invert all bits
 }
 
 // counter for interruption (timer 1)
 int interruptionTimerCounter;
 
-void DisplayerClass::Initialize(PinType commonPinType, uint8_t segmentPins[8], uint8_t displayPins[], int numberOfDigits, uint32_t refreshRate = 60)
+void DisplayerClass::InitializeDisplayContainers(int numberOfDigits, const uint8_t segmentPins[8], PinType commonPinType)
 {
-	// Creating display containers, saving segment and display pins
 	this->numberOfDigits = numberOfDigits;
 	if (this->numberOfDigits < 1)
 	{
@@ -69,11 +69,14 @@ void DisplayerClass::Initialize(PinType commonPinType, uint8_t segmentPins[8], u
 		return;
 	}
 	digits = new Digit[this->numberOfDigits];
-	memcpy(this->segmentPins, segmentPins, 8 * sizeof(decltype(segmentPins)));
+	memcpy(this->segmentPins, segmentPins, numberOfSegments * sizeof(decltype(segmentPins)));
 	this->commonPinType = commonPinType;
+}
 
+void DisplayerClass::InitializePins(const uint8_t displayPins[])
+{
 	// initialize segment pins
-	for (int segmentIndex = 0; segmentIndex < 8; ++segmentIndex)
+	for (int segmentIndex = 0; segmentIndex < numberOfSegments; ++segmentIndex)
 	{
 		pinMode(segmentPins[segmentIndex], OUTPUT);
 		digitalWrite(segmentPins[segmentIndex], LOW + commonPinType);
@@ -86,15 +89,20 @@ void DisplayerClass::Initialize(PinType commonPinType, uint8_t segmentPins[8], u
 		pinMode(digits[digitIndex].pin, OUTPUT);
 		digitalWrite(digits[digitIndex].pin, HIGH - commonPinType);
 	}
+}
 
-	// initialize empty number blank
+void DisplayerClass::InitializeEmptyBlank()
+{
 	emptyBlank = new char[numberOfDigits + 1];
 	for (int blankIndex = 0; blankIndex < numberOfDigits; ++blankIndex)
 	{
 		emptyBlank[blankIndex] = 'x';
 	}
 	emptyBlank[numberOfDigits] = '\0';
+}
 
+void DisplayerClass::InitializeInterruptions(uint32_t refreshRate)
+{
 	// initialize pseudo multithreading using interrupts
 	// https://arduinodiy.wordpress.com/2012/02/28/timer-interrupts/
 	noInterrupts();	// pause interrupts to initialize
@@ -110,9 +118,19 @@ void DisplayerClass::Initialize(PinType commonPinType, uint8_t segmentPins[8], u
 	TC1_OVERFLOW_REACTION |= (1 << CALL_INTERRUPT_VECTOR);	// enable timer overflow interrupt
 
 	interrupts();	// unpause all interrupts and start refreshing
+}
+
+void DisplayerClass::Initialize(PinType commonPinType, const uint8_t segmentPins[8], const uint8_t displayPins[], int numberOfDigits, uint32_t refreshRate = 60)
+{
+	InitializeDisplayContainers(numberOfDigits, segmentPins, commonPinType);
+
+	InitializePins(displayPins);
+
+	InitializeEmptyBlank();
+
+	InitializeInterruptions(refreshRate);
 
 	isInitialized = true;
-	Show(emptyBlank);
 }
 
 void DisplayerClass::Show(const char cstring[] = "")
@@ -125,12 +143,12 @@ void DisplayerClass::Show(const char cstring[] = "")
 			{
 				if (stringIndex == 0)
 				{
-					GetSymbol('0', digits[digitIndex].encoding, true, commonPinType);
+					digits[digitIndex].SetSymbol('0', true, commonPinType);
 					++digitIndex;
 				}
 				continue;
 			}
-			GetSymbol(cstring[stringIndex], digits[digitIndex].encoding, cstring[stringIndex + 1] == '.', commonPinType);
+			digits[digitIndex].SetSymbol(cstring[stringIndex], cstring[stringIndex + 1], commonPinType);
 			++digitIndex;
 		}
 	}
@@ -232,9 +250,9 @@ void DisplayerClass::Refresh()
 	{
 		digitalWrite(digits[refreshableDigitIndex].pin, HIGH - commonPinType);
 		refreshableDigitIndex = (refreshableDigitIndex + 1) % numberOfDigits;
-		for (int segmentIndex = 0; segmentIndex < 8; ++segmentIndex)
+		for (int segmentIndex = 0; segmentIndex < numberOfSegments; ++segmentIndex)
 		{
-			digitalWrite(segmentPins[segmentIndex], digits[refreshableDigitIndex].encoding << segmentIndex & 0b10000000);
+			digitalWrite(segmentPins[segmentIndex], digits[refreshableDigitIndex].binaryRepresentation << segmentIndex & lastBit);
 		}
 		digitalWrite(digits[refreshableDigitIndex].pin, LOW + commonPinType);
 	}
